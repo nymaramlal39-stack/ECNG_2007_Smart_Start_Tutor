@@ -60,7 +60,8 @@
       { n: "5.5", t: "Decoder Applications", s: "decoder-applications" },
       { n: "5.6", t: "Logic Synthesis with Multiplexers", s: "mux-synthesis" },
       { n: "5.7", t: "3-bit Parity Generator", s: "parity" },
-      { n: "5.8", t: "Ripple-Carry Adder", s: "ripple-timing" }
+      { n: "5.8", t: "Ripple-Carry Adder", s: "ripple-timing" },
+      { n: "5.9", t: "Port Mapping and Basys 3 Pins", s: "port-mapping" }
     ],
     "data-representation": [
       { n: "6.1", t: "Binary Values and Place Value", s: "binary-values" },

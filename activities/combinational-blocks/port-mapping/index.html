@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Port Mapping: Joining Blocks and Pinning Them to the Basys 3</title>
+<style>
+:root{--bg:#fff;color-scheme:light;--card:#fff;--ink:#14213d;--mute:#51607a;--line:#cfd8e6;--acc:#1f6feb;--on:#19a974;--off:#9aa7bd;--warn:#d98a1a;--bad:#c93c3c;--code:#f4f7fb;--hl:rgba(240,160,40,.35);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+
+
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:linear-gradient(135deg,#0a1f44,#13357a);color:#fff;border-bottom:4px solid #2f81f7;padding:.9rem 1.2rem 1rem}
+.top{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;max-width:1000px;margin:auto}
+.brand{font-weight:700}.brand span{display:block;font-weight:400;font-size:.8rem;opacity:.75}
+.mod{margin-left:auto;font-size:.8rem;background:rgba(255,255,255,.14);padding:.2rem .7rem;border-radius:99px}
+h1{max-width:1000px;margin:.7rem auto .6rem;font-size:1.45rem;line-height:1.25}
+.prog{max-width:1000px;margin:auto}.steps{display:flex;gap:.5rem;flex-wrap:wrap;font-size:.82rem}
+.steps span{padding:.15rem .7rem;border-radius:99px;border:1px solid rgba(255,255,255,.4)}.steps span.ok{background:#19a974;border-color:#19a974}
+.bar{height:6px;background:rgba(255,255,255,.2);border-radius:9px;margin-top:.5rem;overflow:hidden}.bar i{display:block;height:100%;width:0;background:#3ddc97;transition:width .4s}
+main{max-width:1000px;margin:auto;padding:1rem}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1rem 1.2rem;margin:0 0 1rem;box-shadow:0 1px 4px rgba(10,31,68,.08)}
+.tag{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--acc)}h2{margin:.1rem 0 .5rem;font-size:1.2rem}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88em}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:.35rem .8rem}
+button.p{background:var(--acc);border-color:var(--acc);color:#fff}button[aria-pressed=true],button.sel{outline:2px solid var(--acc)}
+.row{display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0}
+svg{width:100%;height:auto;display:block}svg text{fill:var(--ink);font-size:13px}svg .m{fill:var(--mute);font-size:11px}
+.w{fill:none;stroke:var(--off);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.w.on{stroke:var(--on);stroke-dasharray:9 6;animation:fl .7s linear infinite}@keyframes fl{to{stroke-dashoffset:-15}}
+@media (prefers-reduced-motion:reduce){.w.on{animation:none}}
+.blk{fill:var(--code);stroke:var(--acc);stroke-width:2}.blk.h{fill:var(--hl)}
+.sw{cursor:pointer}.sw circle{fill:var(--card);stroke:var(--off);stroke-width:3}.sw.on circle{fill:var(--on);stroke:var(--on)}.sw.on text.v{fill:#fff}
+.led{fill:var(--card);stroke:var(--off);stroke-width:3}.led.on{fill:var(--on);stroke:var(--on)}
+.port{fill:var(--acc)}
+.tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.4rem}
+pre{margin:0;background:var(--code);border:1px solid var(--line);border-radius:8px;padding:.7rem;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre .l{display:block;padding:0 .3rem;border-radius:3px;white-space:pre}pre .l.h{background:var(--hl)}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.88rem}th,td{border:1px solid var(--line);padding:.3rem .5rem;text-align:left}
+.fb{border-left:4px solid var(--line);padding:.5rem .8rem;margin:.6rem 0;background:var(--code);border-radius:0 8px 8px 0}.fb.ok{border-color:var(--on)}.fb.no{border-color:var(--bad)}.fb.er{border-color:var(--warn)}
+.chip{font-size:.75rem;padding:.1rem .6rem;border-radius:99px;border:1px solid var(--line);color:var(--mute)}
+input[type=text]{font:inherit;font-family:ui-monospace,monospace;padding:.3rem .5rem;width:7rem;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+fieldset{border:1px solid var(--line);border-radius:8px;margin:.7rem 0}label{display:block;margin:.2rem 0}details{margin:.5rem 0}
+.ev,.ex{border:1px solid var(--line);border-radius:10px;padding:.7rem .9rem;margin:.8rem 0;background:var(--code)}.ev h3,.ex h3{margin:0 0 .3rem;font-size:1rem}
+#trace{padding-left:1.3rem;margin:.4rem 0}#trace li{margin:.35rem 0}#trace button{margin-left:.4rem;font-size:.8rem;padding:.1rem .6rem}
+#chkl{list-style:none;padding:0;margin:.3rem 0 .6rem}#chkl li{margin:.15rem 0}#chkl .d{color:var(--on);font-weight:700}
+.page-nav{display:flex;justify-content:space-between;gap:1rem;margin:1.5rem 0;flex-wrap:wrap}
+.page-nav a{display:flex;flex-direction:column;padding:.8rem 1rem;background:var(--card);border:1px solid var(--line);border-radius:.7rem;color:var(--ink);text-decoration:none}
+.page-nav a:hover,.page-nav a:focus-visible{text-decoration:underline}
+.page-nav small{color:var(--mute)}
+.page-nav a:last-child{text-align:right;margin-left:auto}
+</style></head><body>
+<header><div class="top"><div class="brand">SmartStart Digital Electronics Tutor<span>IEEE EDS Trinidad and Tobago Chapter Edition</span></div><span class="mod">Module 5 &middot; Activity 5.9</span></div>
+<h1>Port Mapping: Joining Blocks and Pinning Them to the Basys 3</h1>
+<div class="prog"><div class="steps" id="steps"><span id="s1">1 Explore</span><span id="s2">2 Predict</span><span id="s3">3 Connect</span></div><div class="bar"><i id="bar"></i></div></div></header>
+<main>
+<div class="fb er" id="err" hidden role="alert"></div>
+
+<section><div class="tag">Section 1 &middot; Concept</div><h2>One design, two blocks, one wire between them</h2>
+<p>A top-level design can contain no logic of its own. It only creates copies of blocks and joins them with a <strong>port map</strong>: each <code>port =&gt; signal</code> pairs a block&rsquo;s port with a wire of the parent. Here <code>parity3_gen</code> makes a parity bit <code>p</code>, and <code>word_driver</code> shows the codeword d2 d1 d0 p on LEDs. The signal <code>p</code> is the only wire between them. A constraint file (<code>.xdc</code>) then ties the top-level ports to physical Basys 3 pins.</p>
+<p><strong>Objective.</strong> Trace every connection in the port map, then predict what the board LEDs will show.</p></section>
+
+<section><div class="tag">Section 2 &middot; Interactive circuit</div><h2>Flip the switches and follow the signal</h2>
+<div class="row" role="group" aria-label="Highlight an instance"><button data-i="u_gen">u_gen (parity3_gen)</button><button data-i="u_drv">u_drv (word_driver)</button><button data-i="">Clear</button><span class="chip" id="state">state: loading</span></div>
+<svg viewBox="0 0 900 370" role="img" aria-label="Switches feed the parity generator and the word driver, which drive the board LEDs">
+<g id="wires">
+<polyline class="w" id="w_mode" points="56,100 250,100"/><polyline class="w" id="w_mode2" points="215,100 215,40 545,40 545,100 560,100"/>
+<polyline class="w" id="w_d0" points="56,150 250,150"/><polyline class="w" id="w_d1" points="56,200 250,200"/><polyline class="w" id="w_d2" points="56,250 250,250"/>
+<polyline class="w" id="w_bus" points="225,150 225,330 545,330 545,200 560,200"/>
+<polyline class="w" id="w_p" points="420,160 560,160"/>
+<polyline class="w" id="w_ml" points="730,100 830,100"/>
+<polyline class="w" id="w_l3" points="730,200 780,200 780,170 830,170"/><polyline class="w" id="w_l2" points="780,200 780,210 830,210"/><polyline class="w" id="w_l1" points="780,200 780,250 830,250"/><polyline class="w" id="w_l0" points="780,200 780,290 830,290"/>
+</g>
+<rect class="blk" id="b_gen" x="250" y="70" width="170" height="210" rx="10"/><text x="335" y="95" text-anchor="middle" font-weight="700">u_gen</text><text class="m" x="335" y="112" text-anchor="middle">parity3_gen</text>
+<text class="m" x="258" y="104">mode_odd</text><text class="m" x="258" y="154">d(0)</text><text class="m" x="258" y="204">d(1)</text><text class="m" x="258" y="254">d(2)</text><text class="m" x="412" y="164" text-anchor="end">p_out</text>
+<rect class="blk" id="b_drv" x="560" y="70" width="170" height="260" rx="10"/><text x="645" y="95" text-anchor="middle" font-weight="700">u_drv</text><text class="m" x="645" y="112" text-anchor="middle">word_driver</text>
+<text class="m" x="568" y="104">mode_odd</text><text class="m" x="568" y="164">p</text><text class="m" x="568" y="204">d (bus)</text><text class="m" x="722" y="104" text-anchor="end">mode_led</text><text class="m" x="722" y="204" text-anchor="end">word</text>
+<text x="440" y="150" class="m" text-anchor="middle">signal p</text>
+<g fill="#1f6feb"><circle class="port" cx="250" cy="100" r="5"/><circle class="port" cx="250" cy="150" r="5"/><circle class="port" cx="250" cy="200" r="5"/><circle class="port" cx="250" cy="250" r="5"/><circle class="port" cx="420" cy="160" r="5"/><circle class="port" cx="560" cy="100" r="5"/><circle class="port" cx="560" cy="160" r="5"/><circle class="port" cx="560" cy="200" r="5"/><circle class="port" cx="730" cy="100" r="5"/><circle class="port" cx="730" cy="200" r="5"/><circle cx="225" cy="150" r="4"/><circle cx="225" cy="200" r="4"/><circle cx="225" cy="250" r="4"/><circle cx="215" cy="100" r="4"/></g>
+<g id="sws"></g><g id="leds"></g>
+<text class="m" x="445" y="352" text-anchor="middle">d bus (SW0&ndash;SW2) also goes straight to u_drv</text>
+</svg>
+<p class="fb" id="status" aria-live="polite"></p>
+<div class="ev"><h3>Trace the evidence</h3><p style="margin:.2rem 0">Pick an output LED and follow it back to its source. Each step opens the exact line that proves it.</p><div class="row" id="tr-pick" role="group" aria-label="Choose an output to trace"></div><ol id="trace"></ol><div class="row"><button id="pin">Pin this trace as evidence</button></div><div><strong>Evidence log</strong><ul id="log"><li style="color:var(--mute)">Nothing pinned yet.</li></ul></div></div>
+<div class="ex" id="exp"><h3>Exploration checklist</h3><ul id="chkl"></ul><button class="p" id="conc" disabled>Conclude exploration</button> <span id="concmsg" style="margin-left:.5rem;color:var(--mute);font-size:.9rem"></span></div>
+<h3 style="margin:.8rem 0 .3rem;font-size:1rem">Code and constraints</h3>
+<div class="tabs" id="tabs" role="tablist"></div><pre id="code" tabindex="0"></pre>
+<details open><summary><strong>Basys 3 pinout reference</strong> (read from the constraint file)</summary><div class="tw"><table><thead><tr><th>Top-level port</th><th>Pin</th><th>Board resource</th></tr></thead><tbody id="pins"></tbody></table></div></details>
+<p class="m" style="color:var(--mute);font-size:.85rem">Everything shown is pre-computed and static. The Tutor does not synthesize designs or program boards. To try it on a real board, create a Vivado project for the Basys 3, add the four VHDL files and <code>portmap_top.xdc</code>, then run synthesis, implementation and bitstream generation.</p></section>
+
+<section><div class="tag">Section 3 &middot; Predict and check</div><h2>Predict the board</h2>
+<p><strong>Setting:</strong> SW2 SW1 SW0 = <code>101</code> and SW15 = <code>1</code> (odd mode). Type what LD3 LD2 LD1 LD0 will show, as four bits.</p>
+<div class="row"><input type="text" id="pred" maxlength="8" autocomplete="off" aria-label="LD3 to LD0 as four bits" placeholder="e.g. 0000"><button class="p" id="chk">Check</button><button id="show" disabled>Show expected</button></div>
+<details><summary>Hint</summary><p>The word is d2 d1 d0 then p. Count the 1s in the data, then choose p so that the whole word has an odd number of 1s.</p></details>
+<fieldset><legend>Which port-map line carries the parity bit from <code>u_gen</code> to <code>u_drv</code>?</legend>
+<label><input type="radio" name="q" value="a"> <code>p_out =&gt; p</code> in u_gen, and <code>p =&gt; p</code> in u_drv</label>
+<label><input type="radio" name="q" value="b"> <code>d =&gt; sw_data</code> in both blocks</label>
+<label><input type="radio" name="q" value="c"> <code>mode_led =&gt; led_mode</code></label></fieldset>
+<button class="p" id="chk2">Check connection</button><div class="fb" id="fb" aria-live="polite">Answer both parts, then check.</div></section>
+<nav class="page-nav" aria-label="Activity navigation">
+  <a href="../ripple-timing/"><small>Previous activity</small><strong>&larr; 5.8 Ripple-Carry Adder</strong></a>
+  <a href="../../../modules/data-representation/"><small>Next module</small><strong>Data Representation &rarr;</strong></a>
+</nav>
+</main>
+<script type="application/json" id="content">[{"name": "portmap_top.vhd", "text": "-- portmap_top.vhd : top level that joins two blocks with named port maps.\n-- parity3_gen makes the parity bit; word_driver shows the codeword on LEDs.\nlibrary ieee;\nuse ieee.std_logic_1164.all;\n\nentity portmap_top is\n    port (\n        sw_data  : in  std_logic_vector(2 downto 0);\n        sw_mode  : in  std_logic;\n        led_word : out std_logic_vector(3 downto 0);\n        led_mode : out std_logic\n    );\nend entity portmap_top;\n\narchitecture structural of portmap_top is\n    signal p : std_logic;    -- parity bit: output of u_gen, input of u_drv\nbegin\n    u_gen : entity work.parity3_gen\n        port map (\n            d        => sw_data,\n            mode_odd => sw_mode,\n            p_out    => p\n        );\n\n    u_drv : entity work.word_driver\n        port map (\n            d        => sw_data,\n            p        => p,\n            mode_odd => sw_mode,\n            word     => led_word,\n            mode_led => led_mode\n        );\nend architecture structural;\n"}, {"name": "word_driver.vhd", "text": "-- word_driver.vhd : output block. Presents the codeword d2 d1 d0 p on four LEDs.\nlibrary ieee;\nuse ieee.std_logic_1164.all;\n\nentity word_driver is\n    port (\n        d        : in  std_logic_vector(2 downto 0);\n        p        : in  std_logic;\n        mode_odd : in  std_logic;\n        word     : out std_logic_vector(3 downto 0);\n        mode_led : out std_logic\n    );\nend entity word_driver;\n\narchitecture rtl of word_driver is\nbegin\n    word     <= d & p;       -- word(3)=d2, word(2)=d1, word(1)=d0, word(0)=p\n    mode_led <= mode_odd;\nend architecture rtl;\n"}, {"name": "parity3_gen.vhd", "text": "-- parity3_gen.vhd : 3-bit parity generator with selectable EVEN / ODD mode.\n--   mode_odd = '0' -> even parity: d & p_out holds an EVEN number of '1's\n--   mode_odd = '1' -> odd  parity: d & p_out holds an ODD  number of '1's\n-- Built only by joining three xor_cell blocks with named port maps.\n--\n--   d(0) --\\\n--           u_x01 -- x01 --\\\n--   d(1) --/                u_x012 -- x012 --\\\n--   d(2) -------------------/                 u_mode -- p_out\n--   mode_odd ---------------------------------/\nlibrary ieee;\nuse ieee.std_logic_1164.all;\n\nentity parity3_gen is\n    port (\n        d        : in  std_logic_vector(2 downto 0);\n        mode_odd : in  std_logic;\n        p_out    : out std_logic\n    );\nend entity parity3_gen;\n\narchitecture structural of parity3_gen is\n    signal x01  : std_logic;   -- d(0) xor d(1)\n    signal x012 : std_logic;   -- d(0) xor d(1) xor d(2)  (even-parity bit)\nbegin\n    u_x01  : entity work.xor_cell port map (i0 => d(0), i1 => d(1),     o => x01);\n    u_x012 : entity work.xor_cell port map (i0 => x01,  i1 => d(2),     o => x012);\n    u_mode : entity work.xor_cell port map (i0 => x012, i1 => mode_odd, o => p_out);\nend architecture structural;\n"}, {"name": "portmap_top.xdc", "text": "## portmap_top.xdc : pin map for portmap_top (Basys 3, Artix-7 xc7a35tcpg236-1)\nset_property CFGBVS VCCO [current_design]\nset_property CONFIG_VOLTAGE 3.3 [current_design]\n\n## Slide switches\nset_property -dict {PACKAGE_PIN V17 IOSTANDARD LVCMOS33} [get_ports {sw_data[0]}] ;# SW0 data bit d0\nset_property -dict {PACKAGE_PIN V16 IOSTANDARD LVCMOS33} [get_ports {sw_data[1]}] ;# SW1 data bit d1\nset_property -dict {PACKAGE_PIN W16 IOSTANDARD LVCMOS33} [get_ports {sw_data[2]}] ;# SW2 data bit d2\nset_property -dict {PACKAGE_PIN R2  IOSTANDARD LVCMOS33} [get_ports sw_mode]      ;# SW15 mode (0 even, 1 odd)\n\n## LEDs: LD3..LD0 show the codeword d2 d1 d0 p\nset_property -dict {PACKAGE_PIN U16 IOSTANDARD LVCMOS33} [get_ports {led_word[0]}] ;# LD0 parity bit\nset_property -dict {PACKAGE_PIN E19 IOSTANDARD LVCMOS33} [get_ports {led_word[1]}] ;# LD1 d0\nset_property -dict {PACKAGE_PIN U19 IOSTANDARD LVCMOS33} [get_ports {led_word[2]}] ;# LD2 d1\nset_property -dict {PACKAGE_PIN V19 IOSTANDARD LVCMOS33} [get_ports {led_word[3]}] ;# LD3 d2\nset_property -dict {PACKAGE_PIN L1  IOSTANDARD LVCMOS33} [get_ports led_mode]      ;# LD15 mode mirror\n\n## Combinational design: virtual clock so the timing report shows switch -> LED delay\ncreate_clock -name vclk -period 20.000\nset_input_delay  -clock vclk 0 [get_ports {sw_data[*] sw_mode}]\nset_output_delay -clock vclk 0 [get_ports {led_word[*] led_mode}]\n"}]</script>
+<script>
+"use strict";
+(()=>{const $=s=>document.querySelector(s);
+const st={d0:0,d1:0,d2:0,m:0};let tab=0,focus="",inst="",ok1=false,ok2=false,exploreDone=false,touched=new Set(),insts=new Set(),pinned=new Map(),FILES=[];
+const setState=s=>$("#state").textContent="state: "+s;
+const model=s=>{const p=s.d0^s.d1^s.d2^s.m;return{p,word:`${s.d2}${s.d1}${s.d0}${p}`}};
+function fail(msg){const e=$("#err");e.hidden=false;e.textContent=msg;setState("error")}
+// load content (non-halting: a bad bundle shows a message, the rest keeps working)
+try{FILES=JSON.parse($("#content").textContent);if(!Array.isArray(FILES)||!FILES.every(f=>f&&f.name&&typeof f.text==="string"))throw new Error("fields")}
+catch(e){FILES=[];fail("The activity content bundle is missing or malformed (field: files). The circuit still works, but the code and pinout panels cannot be shown.")}
+// switches and LEDs
+const SW=[["d0","SW0",150],["d1","SW1",200],["d2","SW2",250],["m","SW15 mode",100]];
+$("#sws").innerHTML=SW.map(([k,l,y])=>`<g class="sw" id="sw_${k}" role="switch" tabindex="0" aria-checked="false" aria-label="${l}"><circle cx="56" cy="${y}" r="17"/><text class="v" x="56" y="${y+5}" text-anchor="middle" font-weight="700">0</text><text x="30" y="${y+5}" text-anchor="end" class="m">${l}</text></g>`).join("");
+const LD=[["LD3 U19".replace("U19","V19"),170],["LD2 U19",210],["LD1 E19",250],["LD0 U16",290]];
+$("#leds").innerHTML=LD.map(([l,y],i)=>`<circle class="led" id="led${3-i}" cx="845" cy="${y}" r="13"/><text class="m" x="866" y="${y+4}">${l}</text>`).join("")+`<circle class="led" id="ledm" cx="845" cy="100" r="13"/><text class="m" x="866" y="104">LD15 L1</text>`;
+const wire=(id,v)=>$("#"+id).classList.toggle("on",!!v);
+function draw(){const r=model(st),b=r.word.split("").map(Number);
+wire("w_mode",st.m);wire("w_mode2",st.m);wire("w_d0",st.d0);wire("w_d1",st.d1);wire("w_d2",st.d2);wire("w_bus",st.d0|st.d1|st.d2);wire("w_p",r.p);wire("w_ml",st.m);
+wire("w_l3",b[0]);wire("w_l2",b[1]);wire("w_l1",b[2]);wire("w_l0",b[3]);
+[["led3",b[0]],["led2",b[1]],["led1",b[2]],["led0",b[3]],["ledm",st.m]].forEach(([i,v])=>$("#"+i).classList.toggle("on",!!v));
+SW.forEach(([k])=>{const g=$("#sw_"+k);g.classList.toggle("on",!!st[k]);g.setAttribute("aria-checked",String(!!st[k]));g.querySelector("text.v").textContent=st[k]});
+$("#status").textContent=`SW2 SW1 SW0 = ${st.d2}${st.d1}${st.d0}, mode ${st.m?"odd":"even"}. u_gen drives p = ${r.p}; u_drv shows LD3..LD0 = ${r.word}.`}
+SW.forEach(([k])=>{const g=$("#sw_"+k),f=()=>{st[k]^=1;touched.add(k);draw();prog()};g.addEventListener("click",f);g.addEventListener("keydown",e=>{if(e.key===" "||e.key==="Enter"){e.preventDefault();f()}})});
+// code viewer with instance highlight
+function renderCode(){const f=FILES[tab];if(!f){$("#code").textContent=FILES.length?"":"No code available.";return}
+const lines=f.text.replace(/\n$/,"").split("\n");let h=new Set();if(focus){const fi=lines.findIndex(l=>l.includes(focus));if(fi>=0)h.add(fi)}
+if(inst){const s=lines.findIndex(l=>l.includes(inst+" :"));if(s>=0){for(let i=s;i<lines.length;i++){h.add(i);if(lines[i].includes(");")&&i>s&&!/^\s*\w+\s*=>/.test(lines[i])||(i>s&&/;\s*$/.test(lines[i])&&lines[i].includes(")")))break}}}
+$("#code").innerHTML=lines.map((l,i)=>`<span class="l${h.has(i)?" h":""}">${l.replace(/&/g,"&amp;").replace(/</g,"&lt;")||" "}</span>`).join("");
+$("#tabs").innerHTML=FILES.map((x,i)=>`<button role="tab" aria-pressed="${i===tab}" data-t="${i}">${x.name}</button>`).join("");
+$("#tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{tab=+b.dataset.t;renderCode()})}
+document.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{inst=b.dataset.i;focus="";if(inst)insts.add(inst);
+$("#b_gen").classList.toggle("h",inst==="u_gen");$("#b_drv").classList.toggle("h",inst==="u_drv");
+if(inst){const i=FILES.findIndex(f=>f.name==="portmap_top.vhd");if(i>=0)tab=i}renderCode();prog()});
+// pinout parsed from the constraint file
+function pins(){const x=FILES.find(f=>f.name.endsWith(".xdc"));if(!x){$("#pins").innerHTML="<tr><td colspan=3>Constraint file not available.</td></tr>";return}
+const rows=[];x.text.split("\n").forEach(l=>{const m=l.match(/PACKAGE_PIN\s+(\w+).*?get_ports\s+(?:\{([^}]+)\}|(\S+?))\]/);if(m){const c=l.match(/#\s*(.*)$/);rows.push(`<tr><td><code>${m[2]||m[3]}</code></td><td>${m[1]}</td><td>${c?c[1]:""}</td></tr>`)}});
+$("#pins").innerHTML=rows.join("")||"<tr><td colspan=3>No pin assignments found in the constraint file.</td></tr>"}
+// evidence trace: follow an output back through the port maps to a switch or the constraint file
+const SWP={SW0:"V17",SW1:"V16",SW2:"W16",SW15:"R2"};
+const OUT={LD0:{pin:"U16",port:"led_word[0]",bit:0},LD1:{pin:"E19",port:"led_word[1]",bit:1,n:0,sw:"SW0",sp:"sw_data[0]"},LD2:{pin:"U19",port:"led_word[2]",bit:2,n:1,sw:"SW1",sp:"sw_data[1]"},LD3:{pin:"V19",port:"led_word[3]",bit:3,n:2,sw:"SW2",sp:"sw_data[2]"},LD15:{pin:"L1",port:"led_mode",sw:"SW15",sp:"sw_mode"}};
+let cur="LD0";
+function steps(k){const o=OUT[k],s=[];
+const xk=o.port.includes("[")?"{"+o.port+"}":o.port+"]";
+s.push({t:`Pin: ${k} is board pin ${o.pin}, assigned to top-level port ${o.port} in the constraint file.`,f:"portmap_top.xdc",k:xk});
+if(k==="LD15"){
+s.push({t:"Top level: u_drv's port map connects mode_led => led_mode.",f:"portmap_top.vhd",k:"=> led_mode"});
+s.push({t:"Block: word_driver copies mode_odd straight to mode_led.",f:"word_driver.vhd",k:"mode_led <="});
+s.push({t:"Top level: mode_odd is connected to sw_mode.",f:"portmap_top.vhd",k:"mode_odd => sw_mode"})}
+else{
+s.push({t:"Top level: u_drv's port map connects word => led_word.",f:"portmap_top.vhd",k:"=> led_word"});
+s.push({t:`Block: word_driver builds word <= d & p, so word(${o.bit}) is ${k==="LD0"?"p, the parity bit":"d("+o.n+")"}.`,f:"word_driver.vhd",k:"word     <="});
+if(k==="LD0"){s.push({t:"Top level: u_gen's p_out drives the signal p, which feeds u_drv.",f:"portmap_top.vhd",k:"p_out    => p"});s.push({t:"Inside u_gen: u_mode XORs x012 with mode_odd to make p_out.",f:"parity3_gen.vhd",k:"u_mode"});return s}
+s.push({t:"Top level: u_drv's d input is wired to sw_data.",f:"portmap_top.vhd",k:"d        => sw_data"})}
+s.push({t:`Source: ${o.sw} (pin ${SWP[o.sw]}) feeds ${o.sp} in the constraint file.`,f:"portmap_top.xdc",k:o.sp.includes("[")?"{"+o.sp+"}":o.sp+"]"});return s}
+function buildTrace(){
+$("#tr-pick").innerHTML=Object.keys(OUT).map(k=>`<button data-o="${k}" aria-pressed="${k===cur}">${k}</button>`).join("");
+$("#tr-pick").querySelectorAll("button").forEach(b=>b.onclick=()=>{cur=b.dataset.o;buildTrace()});
+const st2=steps(cur);
+$("#trace").innerHTML=st2.map((x,i)=>`<li>${x.t}<button data-s="${i}">Show in code</button></li>`).join("");
+$("#trace").querySelectorAll("button").forEach(b=>b.onclick=()=>{const x=st2[+b.dataset.s],i=FILES.findIndex(f=>f.name===x.f);
+if(i<0){fail("The file "+x.f+" is missing from the content bundle, so this step cannot be shown.");return}
+tab=i;focus=x.k;inst="";$("#b_gen").classList.remove("h");$("#b_drv").classList.remove("h");renderCode();$("#code").scrollIntoView({block:"nearest"})})}
+$("#pin").onclick=()=>{pinned.set(cur,steps(cur).length);
+$("#log").innerHTML=[...pinned].map(([k,n])=>`<li>${k}: traced from pin to source in ${n} steps</li>`).join("");prog()};
+function chk(){const it=[[`Toggle all four switches (${touched.size}/4)`,touched.size>=4],[`Inspect both blocks, u_gen and u_drv (${insts.size}/2)`,insts.size>=2],[`Pin one traced output as evidence (${pinned.size}/1)`,pinned.size>=1]];
+$("#chkl").innerHTML=it.map(([t,d])=>`<li>${d?'<span class="d">\u2713</span>':"\u25cb"} ${t}</li>`).join("");
+const all=it.every(x=>x[1]);$("#conc").disabled=exploreDone||!all;
+$("#concmsg").textContent=exploreDone?"Exploration concluded. Your evidence is kept in the log above.":(all?"All done. Conclude when you are ready.":"Finish the items above to conclude.")}
+$("#conc").onclick=()=>{exploreDone=true;setState("explored");prog()};
+// progress
+function prog(){chk();const a=exploreDone;const n=[a,ok1,ok2];
+["s1","s2","s3"].forEach((id,i)=>$("#"+id).classList.toggle("ok",n[i]));const c=n.filter(Boolean).length;$("#bar").style.width=(c/3*100)+"%";
+if(c===3){setState("complete");globalThis.SmartStartProgress?.complete("port-mapping")}}
+// assessment (invalid input never halts the page)
+const fb=(t,c)=>{const e=$("#fb");e.className="fb "+c;e.textContent=t};
+$("#chk").onclick=()=>{const v=$("#pred").value.trim();setState("checking");
+if(!/^[01]{4}$/.test(v)){fb("Enter exactly four bits, for example 0110. Use only 0 and 1.","er");setState("ready");return}
+$("#show").disabled=false;const exp=model({d0:1,d1:0,d2:1,m:1}).word;
+if(v===exp){ok1=true;fb(`Correct: LD3..LD0 = ${exp}. The data 101 holds two 1s, so odd mode sets p = 1 to make three.`,"ok")}
+else{ok1=false;fb("Not quite. Remember the word is d2 d1 d0 then p, and odd parity needs an odd number of 1s in the whole word.","no")}
+setState("feedback");prog()};
+$("#show").onclick=()=>fb(`Expected: ${model({d0:1,d1:0,d2:1,m:1}).word}. Try setting these switches above to see it on the board.`,"ok");
+$("#chk2").onclick=()=>{const q=document.querySelector("input[name=q]:checked");if(!q){fb("Choose one answer for the connection question.","er");return}
+if(q.value==="a"){ok2=true;fb("Correct. The signal p is the output of u_gen (p_out => p) and the input of u_drv (p => p).","ok")}
+else{ok2=false;fb("Not that one. Look for the line where p_out leaves u_gen and where that same signal enters u_drv.","no")}prog()};
+draw();renderCode();pins();buildTrace();prog();if(!$("#err").hidden===false)setState("ready")})();
+</script></body></html>
